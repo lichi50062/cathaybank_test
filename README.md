@@ -1,7 +1,7 @@
 # cathaybank
 國泰世華 JAVA engineer 線上作業
 
-首頁 http://localhost:8888/cathaybanktest/
+首頁 http://localhost:8888/
 
 SQL語法如下
 
