@@ -1,5 +1,6 @@
 package org.example.cathaybank.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.example.cathaybank.entity.CurrencyMapper;
 import org.example.cathaybank.exception.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 
 @RestController
+@Slf4j
 @RequestMapping("/api")
 public class CurrentPriceController {
 
@@ -36,7 +38,7 @@ public class CurrentPriceController {
      */
     @GetMapping("/getCurrentprice")
     public ResponseEntity<BitcoinPriceResponse> getBitcoinPrice() {
-
+        log.info("查詢匯率");
         ResponseEntity<BitcoinPriceResponse> response = currentPriceService.getCurrentBitcoinPrice();
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
             throw new ResourceNotFoundException("無法獲取匯率資訊");
@@ -50,7 +52,7 @@ public class CurrentPriceController {
      */
     @GetMapping("/getCurrentpriceV2")
     public ResponseEntity<CurrentBitcoinPriceV2> getBitcoinRate() {
-
+        log.info("查詢匯率V2");
         ResponseEntity<CurrentBitcoinPriceV2> currentBitcoinPriceV2 = currentPriceService.getCurrentBitcoinPriceV2();
         if (currentBitcoinPriceV2.getStatusCode() != HttpStatus.OK) {
             throw new ResourceNotFoundException("無法獲取匯率資訊");
@@ -66,6 +68,7 @@ public class CurrentPriceController {
      */
     @PostMapping("/add")
     public ResponseEntity<CurrencyMapper> add(@RequestBody CurrencyMapper currencyMapper) {
+        log.info("新增幣別");
         if (StringUtils.isBlank(currencyMapper.getCurrencyCode()) || StringUtils.isBlank(currencyMapper.getCurrencyName())) {
             throw new IllegalArgumentException("傳入參數有誤");
         }
@@ -81,6 +84,7 @@ public class CurrentPriceController {
      */
     @PutMapping("/updateCurrencyById/{id}")
     public ResponseEntity<CurrencyMapper> update(@PathVariable Long id, @RequestBody CurrencyMapper currencyMapper) {
+        log.info("修改幣別id:{}, currencyMapper{}", id, currencyMapper);
         if (StringUtils.isBlank(currencyMapper.getCurrencyCode()) || StringUtils.isBlank(currencyMapper.getCurrencyName())) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -100,6 +104,7 @@ public class CurrentPriceController {
      */
     @GetMapping("/getCurrency")
     public ResponseEntity<List<CurrencyMapper>> getCurrency(@RequestParam(value = "getCurrencyInput") String getCurrencyInput) {
+        log.info("查詢幣別 getCurrencyInput : {}", getCurrencyInput);
         Specification<CurrencyMapper> spec = currentPriceService.nameOrCodeContains(getCurrencyInput);
         List<CurrencyMapper> results = currencyMapperRepository.findAll(spec);
         if (results.isEmpty()) {
@@ -113,6 +118,7 @@ public class CurrentPriceController {
      */
     @GetMapping("/getAllCurrency")
     public ResponseEntity<List<CurrencyMapper>> getAll() {
+        log.info("查詢所有幣別");
         List<CurrencyMapper> currencyMappers = currencyMapperRepository.findAll();
         if (currencyMappers.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -126,6 +132,7 @@ public class CurrentPriceController {
      */
     @DeleteMapping("/deleteCurrencyById/{id}")
     public ResponseEntity<HttpStatus> delete(@PathVariable Long id) {
+        log.info("刪除幣別id:{}", id);
         try {
             currencyMapperRepository.deleteById(id);
         } catch (Exception e) {

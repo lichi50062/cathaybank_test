@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<configuration>
+	<property name="ROOT_PATH" value="/cathaybank_test/logs"/>
+
+	<property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %class{36} : %m%n"/>
+
+	<appender name="FILE_OUT_ROOT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<append>true</append>
+		<file>${ROOT_PATH}/cathaybank_test.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${ROOT_PATH}/sys-%d{yyyy-MM-dd_HH}.log.gz</fileNamePattern>
+			<maxHistory>730</maxHistory>
+			<totalSizeCap>100GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<root>
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE_OUT_ROOT" />
+	</root>
+
+</configuration>

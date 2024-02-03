@@ -1,5 +1,6 @@
 package org.example.cathaybank.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.example.cathaybank.entity.CurrencyMapper;
 import org.example.cathaybank.repository.CurrencyMapperRepository;
@@ -28,6 +29,7 @@ import java.util.Locale;
  * @Description:
  */
 @Service
+@Slf4j
 public class CurrentPriceService {
 
     @Autowired
@@ -43,12 +45,15 @@ public class CurrentPriceService {
      * 發送請求到 https://api.coindesk.com/v1/bpi/currentprice.json
      */
     public ResponseEntity<BitcoinPriceResponse> getCurrentBitcoinPrice() {
+        log.info("getCurrentBitcoinPrice url: {}", url);
         try {
             BitcoinPriceResponse response = restTemplate.getForObject(url, BitcoinPriceResponse.class);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (HttpClientErrorException ex) {
+            log.error("HttpClientErrorException:", ex);
             return ResponseEntity.status(ex.getStatusCode()).body(null);
         } catch (Exception ex) {
+            log.error("Exception: ", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -59,9 +64,11 @@ public class CurrentPriceService {
      * @return
      */
     public ResponseEntity<CurrentBitcoinPriceV2> getCurrentBitcoinPriceV2() {
+        log.info("getCurrentBitcoinPriceV2");
         try {
             ResponseEntity<BitcoinPriceResponse> responseEntity = getCurrentBitcoinPrice();
             if (!responseEntity.getStatusCode().equals(HttpStatus.OK) || responseEntity.getBody() == null) {
+                log.error("getCurrentBitcoinPriceV2 error: {}", responseEntity.getStatusCode());
                 return ResponseEntity.status(responseEntity.getStatusCode()).build();
             }
             BitcoinPriceResponse bitcoinPriceResponse = responseEntity.getBody();
@@ -71,8 +78,10 @@ public class CurrentPriceService {
             List<String> currencyCodes = Arrays.asList("USD", "EUR", "GBP");
             for (String code : currencyCodes) {
                 CurrencyMapper currencyMapper = currencyMapperRepository.findByCurrencyCode(code).orElse(null);
+                log.info("currencyMapper: {}", currencyMapper);
                 if (currencyMapper != null) {
                     BitcoinPriceResponse.Bpi.Currency currency = getCurrencyFromResponse(bitcoinPriceResponse, code);
+                    log.info("currency: {}", currency);
                     if (currency != null) {
                         bpiList.add(new CurrentBitcoinPriceV2.Bpi(code, currencyMapper.getCurrencyName(), currency.getRate()));
                     }
@@ -87,11 +96,13 @@ public class CurrentPriceService {
             currentBitcoinPriceV2.setBpiList(bpiList);
             return ResponseEntity.ok(currentBitcoinPriceV2);
         } catch (Exception e) {
+            log.error("getCurrentBitcoinPriceV2 error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     private BitcoinPriceResponse.Bpi.Currency getCurrencyFromResponse(BitcoinPriceResponse response, String code) {
+        log.info("getCurrencyFromResponse code: {}", code);
         switch (code) {
             case "USD":
                 return response.getBpi().getUsd();
@@ -110,18 +121,25 @@ public class CurrentPriceService {
      * @param inputDate
      * @return
      */
-    public static LocalDateTime convertToCustomFormat(String inputDate) {
+    public LocalDateTime convertToCustomFormat(String inputDate) {
+        log.info("convertToCustomFormat inputDate: {}", inputDate);
         DateTimeFormatter inputFormatter;
-        if (inputDate.contains("UTC")) {
-            inputFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm:ss z", Locale.ENGLISH);
-        } else if (inputDate.contains("GMT")) {
-            inputFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy 'at' HH:mm z", Locale.ENGLISH);
-        } else {
-            inputFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        try {
+            if (inputDate.contains("UTC")) {
+                inputFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm:ss z", Locale.ENGLISH);
+            } else if (inputDate.contains("GMT")) {
+                inputFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy 'at' HH:mm z", Locale.ENGLISH);
+            } else {
+                inputFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+            }
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(inputDate, inputFormatter);
+           log.info("zonedDateTime: {}", zonedDateTime);
+            return zonedDateTime.withZoneSameInstant(java.time.ZoneId.of("Asia/Taipei")).toLocalDateTime();
+        } catch (Exception e) {
+            log.error("convertToCustomFormat error: ", e);
+            return null;
         }
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(inputDate, inputFormatter);
-        return zonedDateTime.withZoneSameInstant(java.time.ZoneId.of("Asia/Taipei")).toLocalDateTime();
     }
 
     /**
@@ -130,6 +148,8 @@ public class CurrentPriceService {
      * @return
      */
     public static Specification<CurrencyMapper> nameOrCodeContains(String queryCurrencyInput) {
+        log.info("nameOrCodeContains queryCurrencyInput: {}", queryCurrencyInput);
+        try {
             return (root, query, criteriaBuilder) -> {
                 if (StringUtils.isBlank(queryCurrencyInput)) {
                     return criteriaBuilder.conjunction();
@@ -139,6 +159,10 @@ public class CurrentPriceService {
 
                 return criteriaBuilder.or(namePredicate, codePredicate);
             };
+        } catch (Exception e) {
+            log.error("nameOrCodeContains error: ", e);
+            return null;
+        }
     }
 }
 
