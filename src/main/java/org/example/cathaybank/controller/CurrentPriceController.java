@@ -52,7 +52,7 @@ public class CurrentPriceController {
     public ResponseEntity<CurrentBitcoinPriceV2> getBitcoinRate() {
 
         ResponseEntity<CurrentBitcoinPriceV2> currentBitcoinPriceV2 = currentPriceService.getCurrentBitcoinPriceV2();
-        if (currentBitcoinPriceV2 == null) {
+        if (currentBitcoinPriceV2.getStatusCode() != HttpStatus.OK) {
             throw new ResourceNotFoundException("無法獲取匯率資訊");
         }
 

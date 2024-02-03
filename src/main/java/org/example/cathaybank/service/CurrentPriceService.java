@@ -1,6 +1,5 @@
 package org.example.cathaybank.service;
 
-
 import org.apache.commons.lang3.StringUtils;
 import org.example.cathaybank.entity.CurrencyMapper;
 import org.example.cathaybank.repository.CurrencyMapperRepository;
@@ -14,16 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
 import javax.persistence.criteria.Predicate;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * @Author: Lichi
@@ -57,35 +54,53 @@ public class CurrentPriceService {
     }
 
     /**
-     * 取得https://api.coindesk.com/v1/bpi/currentprice.json後進行日期格式轉換
+     * 取得https://api.coindesk.com/v1/bpi/currentprice.json後進行格式轉換
      *
      * @return
      */
     public ResponseEntity<CurrentBitcoinPriceV2> getCurrentBitcoinPriceV2() {
-        CurrentBitcoinPriceV2 currentBitcoinPriceV2 = new CurrentBitcoinPriceV2();
         try {
             ResponseEntity<BitcoinPriceResponse> responseEntity = getCurrentBitcoinPrice();
             if (!responseEntity.getStatusCode().equals(HttpStatus.OK) || responseEntity.getBody() == null) {
                 return ResponseEntity.status(responseEntity.getStatusCode()).build();
             }
             BitcoinPriceResponse bitcoinPriceResponse = responseEntity.getBody();
-            Map<String, BigDecimal> rates = new HashMap<>();
-            rates.put("USD", new BigDecimal(String.valueOf(bitcoinPriceResponse.getBpi().getUsd().getRate_float())));
-            rates.put("GBP", new BigDecimal(String.valueOf(bitcoinPriceResponse.getBpi().getGbp().getRate_float())));
-            rates.put("EUR", new BigDecimal(String.valueOf(bitcoinPriceResponse.getBpi().getEur().getRate_float())));
+            CurrentBitcoinPriceV2 currentBitcoinPriceV2 = new CurrentBitcoinPriceV2();
+            List<CurrentBitcoinPriceV2.Bpi> bpiList = new ArrayList<>();
 
+            List<String> currencyCodes = Arrays.asList("USD", "EUR", "GBP");
+            for (String code : currencyCodes) {
+                CurrencyMapper currencyMapper = currencyMapperRepository.findByCurrencyCode(code).orElse(null);
+                if (currencyMapper != null) {
+                    BitcoinPriceResponse.Bpi.Currency currency = getCurrencyFromResponse(bitcoinPriceResponse, code);
+                    if (currency != null) {
+                        bpiList.add(new CurrentBitcoinPriceV2.Bpi(code, currencyMapper.getCurrencyName(), currency.getRate()));
+                    }
+                }
+            }
             LocalDateTime updated = convertToCustomFormat(bitcoinPriceResponse.getTime().getUpdated());
             LocalDateTime updateduk = convertToCustomFormat(bitcoinPriceResponse.getTime().getUpdateduk());
             LocalDateTime getUpdatedISO = convertToCustomFormat(bitcoinPriceResponse.getTime().getUpdatedISO());
-
             currentBitcoinPriceV2.setUpdated(updated.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
             currentBitcoinPriceV2.setUpdatedISO(updateduk.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
             currentBitcoinPriceV2.setUpdateduk(getUpdatedISO.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
-
-            currentBitcoinPriceV2.setCodeAndRate(rates);
+            currentBitcoinPriceV2.setBpiList(bpiList);
             return ResponseEntity.ok(currentBitcoinPriceV2);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    private BitcoinPriceResponse.Bpi.Currency getCurrencyFromResponse(BitcoinPriceResponse response, String code) {
+        switch (code) {
+            case "USD":
+                return response.getBpi().getUsd();
+            case "EUR":
+                return response.getBpi().getEur();
+            case "GBP":
+                return response.getBpi().getGbp();
+            default:
+                return null;
         }
     }
 
@@ -109,26 +124,11 @@ public class CurrentPriceService {
         return zonedDateTime.withZoneSameInstant(java.time.ZoneId.of("Asia/Taipei")).toLocalDateTime();
     }
 
-    public static void main(String[] args) {
-        String[] dateStrings = {
-                "Feb 2, 2024 18:30:41 UTC",
-                "2024-01-31T13:44:04+00:00",
-                "Jan 31, 2024 at 13:44 GMT"
-        };
-
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-
-        for (String dateString : dateStrings) {
-            try {
-                LocalDateTime localDateTime = convertToCustomFormat(dateString);
-                String formattedDate = localDateTime.format(outputFormatter);
-                System.out.println(formattedDate);
-            } catch (DateTimeParseException e) {
-                System.err.println("無法解析的日期格式: " + dateString);
-            }
-        }
-    }
-
+    /**
+     * 動態模糊查詢幣別名稱或代碼
+     * @param queryCurrencyInput
+     * @return
+     */
     public static Specification<CurrencyMapper> nameOrCodeContains(String queryCurrencyInput) {
             return (root, query, criteriaBuilder) -> {
                 if (StringUtils.isBlank(queryCurrencyInput)) {

@@ -3,6 +3,7 @@ package org.example.cathaybank.repository;
 import org.example.cathaybank.entity.CurrencyMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import java.util.Optional;
 
 /**
  * @Author: Lichi
@@ -12,4 +13,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface CurrencyMapperRepository extends JpaRepository<CurrencyMapper, Long>, JpaSpecificationExecutor<CurrencyMapper> {
 
+    Optional<CurrencyMapper> findByCurrencyCode(String currencyCode);
 }

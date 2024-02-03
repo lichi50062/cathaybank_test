@@ -116,9 +116,12 @@
                         `<p>更新時間 (UK): ${response.updateduk}</p>` +
                         '<ul>';
 
-                    Object.keys(response.codeAndRate).forEach(function (currencyCode) {
-                        const rate = formatRate(response.codeAndRate[currencyCode]);
-                        modalContent += `<li>${currencyCode}: ${rate}</li>`;
+                    // 正确遍历 bpiList 数组
+                    response.bpiList.forEach(function (currency) {
+                        modalContent += '<li>';
+                        modalContent += '<strong>' + currency.currencyName + ' (' + currency.currencyCode + '):</strong> ';
+                        modalContent += currency.rate;
+                        modalContent += '</li>';
                     });
 
                     modalContent += '</ul>';

@@ -3,8 +3,7 @@ package org.example.cathaybank.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 
 /**
  * @Author: Lichi
@@ -33,7 +32,29 @@ public class CurrentBitcoinPriceV2 {
     private String updateduk;
 
     /**
-     * 貨幣代碼code與匯率
+     * 貨幣代碼code與貨幣名稱
      */
-    private Map<String, BigDecimal> codeAndRate;
+    private List<Bpi> bpiList;
+
+    @Data
+    @AllArgsConstructor
+    public static class Bpi {
+
+        /**
+         * 貨幣代碼
+         */
+        private String currencyCode;
+
+        /**
+         * 貨幣名稱
+         */
+        private String currencyName;
+
+        /**
+         * 貨幣價格
+         */
+        private String rate;
+
+
+    }
 }
