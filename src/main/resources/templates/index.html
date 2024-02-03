@@ -1,0 +1,261 @@
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <title>幣別管理系統</title>
+    <img src="/images/logo.svg" alt="Logo">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 的 JS 檔案 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert2 的 CSS 檔案 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            color: #343541;
+            margin: 0;
+            padding: 0;
+            background-color: #FAFAFA;
+        }
+
+        .centered-content {
+            margin: auto;
+            width: 60%;
+            padding: 20px;
+        }
+
+        input, button {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="centered-content">
+    <h1>幣別管理系統</h1>
+
+    <button id="getBitcoinPrice">獲取匯率資訊</button>
+    <div id="bitcoinPrice"></div>
+
+    <button id="getCurrentpriceV2">獲取匯率資訊V2</button>
+    <div id="bitcoinPriceV2"></div>
+
+    <h2>新增幣別</h2>
+    <form id="addCurrencyForm">
+        幣別代碼: <input type="text" id="addCurrencyCode" required>
+        幣別名稱: <input type="text" id="addCurrencyName" required>
+        <button type="submit">新增幣別</button>
+    </form>
+
+    <h2>更新幣別</h2>
+    <form id="updateCurrencyForm">
+        幣別ID: <input type="number" id="updateCurrencyId" required>
+        新幣別代碼: <input type="text" id="updateCurrencyCode" required>
+        新幣別名稱: <input type="text" id="updateCurrencyName" required>
+        <button type="submit">更新幣別</button>
+    </form>
+
+    <h2>查詢幣別(根據貨幣代碼或貨幣名稱模糊查詢)</h2>
+    <form id="getCurrencyForm">
+        幣別: <input type="text" id="getCurrencyInput" required>
+        <button type="submit">查詢幣別</button>
+    </form>
+
+    <!-- 查詢所有幣別按鈕和結果顯示 -->
+    <h2>查詢所有幣別</h2>
+    <div id="allCurrencies"></div> <!-- 更正id以匹配下面的JavaScript -->
+    <button id="getAllCurrencies">查詢所有幣別</button>
+
+    <!-- 刪除幣別表單 -->
+    <h2>刪除幣別</h2>
+    <form id="deleteCurrencyForm">
+        幣別ID: <input type="number" id="deleteCurrencyId" required>
+        <button type="submit">刪除幣別</button>
+    </form>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#getBitcoinPrice').click(function () {
+            $.ajax({
+                url: '/api/getCurrentprice',
+                type: 'GET',
+                success: function (response, status, xhr) {
+                    var html = '<h3>Bitcoin 價格資訊</h3>';
+                    html += '<p><strong>更新時間:</strong> ' + response.time.updated + '</p>';
+                    html += '<p><strong>免責聲明:</strong> ' + response.disclaimer + '</p>';
+                    html += '<p><strong>圖表名稱:</strong> ' + response.chartName + '</p>';
+
+                    html += '<h4>匯率資訊:</h4>';
+                    html += '<ul>';
+                    for (var currency in response.bpi) {
+                        html += '<li>';
+                        html += '<strong>' + response.bpi[currency].description + ' (' + response.bpi[currency].code + '):</strong> ';
+                        html += response.bpi[currency].rate + ' ' + response.bpi[currency].symbol;
+                        html += '</li>';
+                    }
+                    html += '</ul>';
+                    Swal.fire({
+                        html: html,
+                        icon: 'info'
+                    });
+                },
+                error: function (xhr) {
+                    Swal.fire('獲取匯率資訊失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        $('#getCurrentpriceV2').click(function () {
+            $.ajax({
+                url: '/api/getCurrentpriceV2',
+                type: 'GET',
+                success: function (response) {
+                    let modalContent = `<p>更新時間: ${response.updated}</p>` +
+                        `<p>更新時間 (ISO): ${response.updatedISO}</p>` +
+                        `<p>更新時間 (UK): ${response.updateduk}</p>` +
+                        '<ul>';
+
+                    Object.keys(response.codeAndRate).forEach(function (currencyCode) {
+                        const rate = formatRate(response.codeAndRate[currencyCode]);
+                        modalContent += `<li>${currencyCode}: ${rate}</li>`;
+                    });
+
+                    modalContent += '</ul>';
+                    Swal.fire({
+                        title: '匯率資訊V2',
+                        html: modalContent,
+                        icon: 'info',
+                        confirmButtonText: '關閉'
+                    });
+                },
+                error: function (xhr) {
+                    Swal.fire('獲取匯率資訊V2失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        // 查詢所有幣別
+        $('#getAllCurrencies').click(function () {
+            $.ajax({
+                url: '/api/getAllCurrency',
+                type: 'GET',
+                success: function (response) {
+                    let formattedResponse = '<ul>';
+                    response.forEach(function (currency) {
+                        formattedResponse += '<li>ID: ' + currency.id + ', 貨幣代碼: ' + currency.currencyCode + ', 貨幣名稱: ' + currency.currencyName + '</li>';
+                    });
+                    formattedResponse += '</ul>';
+
+                    Swal.fire({
+                        title: '所有幣種',
+                        html: formattedResponse,
+                        icon: 'info',
+                        confirmButtonText: '關閉'
+                    });
+                },
+                error: function (xhr) {
+                    Swal.fire('查詢所有幣別失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        // 新增幣別
+        $('#addCurrencyForm').submit(function (e) {
+            e.preventDefault();
+            var currencyCode = $('#addCurrencyCode').val();
+            var currencyName = $('#addCurrencyName').val();
+            $.ajax({
+                url: '/api/add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({currencyCode: currencyCode, currencyName: currencyName}),
+                success: function (response, status, xhr) {
+                    if (xhr.status === 201) {
+                        Swal.fire('成功', '新增幣別成功', 'success');
+                    } else {
+                        Swal.fire('新增幣別失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire('新增幣別失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        // 更新幣別
+        $('#updateCurrencyForm').submit(function (e) {
+            e.preventDefault();
+            var id = $('#updateCurrencyId').val();
+            var currencyCode = $('#updateCurrencyCode').val();
+            var currencyName = $('#updateCurrencyName').val();
+            $.ajax({
+                url: '/api/updateCurrencyById/' + id,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({currencyCode: currencyCode, currencyName: currencyName}),
+                success: function (response) {
+                    Swal.fire('成功', '更新幣別成功', 'success');
+                },
+                error: function (xhr) {
+                    Swal.fire('更新幣別失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        // 查詢單一幣別
+        $('#getCurrencyForm').submit(function (e) {
+            e.preventDefault();
+            var getCurrencyInput = $('#getCurrencyInput').val();
+            $.ajax({
+                url: '/api/getCurrency?getCurrencyInput=' + encodeURIComponent(getCurrencyInput),
+                type: 'GET',
+                success: function (response, status, xhr) {
+                    if (!response || xhr.status === 204) {
+                        Swal.fire('查無資料', '', 'info');
+                    } else {
+                        var htmlContent = '<ul>';
+                        response.forEach(function (currency) {
+                            htmlContent += '<li>ID: ' + currency.id + ', 貨幣代碼: ' + currency.currencyCode + ', 貨幣名稱: ' + currency.currencyName + '</li>';
+                        });
+                        htmlContent += '</ul>';
+                        Swal.fire({
+                            title: '查詢結果',
+                            html: htmlContent,
+                            icon: 'success',
+                            confirmButtonText: '關閉'
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire('查詢查詢單一幣別失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        // 刪除幣別
+        $('#deleteCurrencyForm').submit(function (e) {
+            e.preventDefault();
+            var id = $('#deleteCurrencyId').val();
+            $.ajax({
+                url: '/api/deleteCurrencyById/' + id,
+                type: 'DELETE',
+                success: function (response, status, xhr) {
+                    Swal.fire('成功', '刪除幣別成功', 'success');
+                },
+                error: function (xhr) {
+                    Swal.fire('刪除幣別失敗', 'HTTP狀態碼：' + xhr.status, 'error');
+                }
+            });
+        });
+
+        function formatRate(rate) {
+            return new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(rate);
+        }
+    });
+
+
+</script>
+
+</body>
+</html>
