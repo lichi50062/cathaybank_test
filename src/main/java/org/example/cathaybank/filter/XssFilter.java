@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * @Author: Lichi
  * @Date: 2024/02/03/上午 05:47
- * @Description:
+ * @Description: 防止XSS攻擊
  */
 
 public class XssFilter implements Filter {

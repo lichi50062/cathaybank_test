@@ -10,7 +10,7 @@ import org.springframework.web.context.request.WebRequest;
 /**
  * @Author: Lichi
  * @Date: 2024/02/03/上午 05:57
- * @Description:
+ * @Description: 全局異常處理
  */
 
 @ControllerAdvice
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 ex.getMessage(),
                 System.currentTimeMillis());
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**

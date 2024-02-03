@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * @Author: Lichi
  * @Date:2024/02/03/上午 03:01
- * @Description:
+ * @Description: 貨幣對應表Repository
  */
 
 public interface CurrencyMapperRepository extends JpaRepository<CurrencyMapper, Long>, JpaSpecificationExecutor<CurrencyMapper> {

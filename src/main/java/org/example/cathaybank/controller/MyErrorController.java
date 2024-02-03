@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 /**
  * @Author: Lichi
  * @Date: 2024/02/03/上午 05:10
- * @Description: 網頁錯誤重導回首頁
+ * @Description: 錯誤處理controller
  */
 
 @Controller

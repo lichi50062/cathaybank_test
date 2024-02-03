@@ -9,7 +9,7 @@ import org.springframework.core.Ordered;
 /**
  * @Author: Lichi
  * @Date: 2024/02/03/上午 05:49
- * @Description:
+ * @Description: Web安全設定
  */
 
 @Configuration

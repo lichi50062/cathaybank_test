@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 /**
  * @Author: Lichi
  * @Date:2024/02/03/上午 04:40
- * @Description:
+ * @Description: RestTemplate託管給spring boot
  */
 
 @Configuration

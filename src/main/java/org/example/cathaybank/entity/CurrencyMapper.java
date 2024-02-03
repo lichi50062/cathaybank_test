@@ -8,7 +8,7 @@ import javax.persistence.*;
 /**
  * @Author: Lichi
  * @Date:2024/02/03/上午 02:43
- * @Description:
+ * @Description: 貨幣代碼與貨幣名稱對應表
  */
 
 @Entity
