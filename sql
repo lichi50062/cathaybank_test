@@ -321,3 +321,63 @@ BEGIN
   l_dec_val := dbms_crypto.decrypt ( p_in, l_mod, p_key ); 
   l_ret     := UTL_I18N.RAW_TO_CHAR(l_dec_val, 'AL32UTF8'); 
   RETURN l_ret;
+
+-- 優化後的查詢：查找近六個月未登入Fubon+的信用卡會員客戶
+-- 確保一個人只計算一次，即使他們有多個COMPANY_KIND
+
+-- 版本1：只返回計數
+SELECT COUNT(DISTINCT base.COMPANY_UID) as count
+FROM DBUSERNEB.COMPANY base
+WHERE 
+    -- 條件1：此記錄是信用卡會員帳戶
+    base.COMPANY_KIND IN (3, 4)
+    
+    -- 條件2：確認此人同時擁有企業/個人帳戶
+    AND EXISTS (
+        SELECT 1
+        FROM DBUSERNEB.COMPANY c2
+        WHERE c2.COMPANY_UID = base.COMPANY_UID
+        AND c2.COMPANY_KIND IN (1, 2)  -- 企業/個人帳戶類型
+    )
+    
+    -- 條件3：檢查此人的所有帳戶都未在過去六個月內透過Fubon+登入
+    AND NOT EXISTS (
+        SELECT 1
+        FROM DBUSERNEB.COMPANY c3
+        JOIN DBUSERNEB.EB_LOGIN_LOG_B l ON l.COMPANY_KEY = c3.COMPANY_KEY
+        WHERE 
+            c3.COMPANY_UID = base.COMPANY_UID
+            AND l.CHANNEL_ID = 'M'  -- Fubon+通路
+            AND l.LOGIN_TIME >= ADD_MONTHS(SYSDATE, -6)
+    );
+
+-- 版本2：返回詳細客戶列表
+SELECT 
+    base.COMPANY_UID,
+    DBUSERNEB.get_dec_val(base.COMPANY_UID, '4E455742616E6B696E67323031343130') as id,
+    MIN(base.COMPANY_KIND) as COMPANY_KIND  -- 只取一個COMPANY_KIND，避免重複
+FROM DBUSERNEB.COMPANY base
+WHERE 
+    -- 條件1：此記錄是信用卡會員帳戶
+    base.COMPANY_KIND IN (3, 4)
+    
+    -- 條件2：確認此人同時擁有企業/個人帳戶
+    AND EXISTS (
+        SELECT 1
+        FROM DBUSERNEB.COMPANY c2
+        WHERE c2.COMPANY_UID = base.COMPANY_UID
+        AND c2.COMPANY_KIND IN (1, 2)  -- 企業/個人帳戶類型
+    )
+    
+    -- 條件3：檢查此人的所有帳戶都未在過去六個月內透過Fubon+登入
+    AND NOT EXISTS (
+        SELECT 1
+        FROM DBUSERNEB.COMPANY c3
+        JOIN DBUSERNEB.EB_LOGIN_LOG_B l ON l.COMPANY_KEY = c3.COMPANY_KEY
+        WHERE 
+            c3.COMPANY_UID = base.COMPANY_UID
+            AND l.CHANNEL_ID = 'M'  -- Fubon+通路
+            AND l.LOGIN_TIME >= ADD_MONTHS(SYSDATE, -6)
+    )
+GROUP BY base.COMPANY_UID  -- 根據UID分組，確保每人只計算一次
+ORDER BY base.COMPANY_UID;
