@@ -12,3 +12,26 @@ eb_login_log_b有個CLIENT_IP欄位，經過下面城市轉換後等於geoip_ran
 
 請幫我把以上邏輯寫成oracle的fuction
 
+CREATE OR REPLACE FUNCTION GET_COUNTRY_FROM_IP(p_client_ip IN VARCHAR2) 
+RETURN VARCHAR2 
+IS
+    l_country_name VARCHAR2(100);
+BEGIN
+    -- 直接使用傳入的 IPv4 字串查詢對應的國家名稱
+    BEGIN
+        SELECT cn.NAME_ZH_TW INTO l_country_name
+        FROM geoip_range_data grd
+        JOIN COUNTRY_NAME cn ON grd.LOCATION_ID = cn.LOCATION_ID
+        WHERE grd.START_IP = p_client_ip
+        AND ROWNUM = 1; -- 確保只取一筆資料
+        
+        RETURN l_country_name;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN NULL; -- 若找不到對應的國家，返回 NULL
+        WHEN OTHERS THEN
+            -- 可根據需求處理其他例外情況
+            RETURN NULL;
+    END;
+END GET_COUNTRY_FROM_IP;
+/
