@@ -11,7 +11,7 @@ eb_login_log_b有個CLIENT_IP欄位，CLIENT_IP經過下面程式轉換後要在
     }
 
 請幫我把以上邏輯寫成oracle的function，varchar client_ip進入function，NAME_ZH_TW顯示結果
-CREATE OR REPLACE FUNCTION GET_COUNTRY_FROM_IP(p_client_ip IN VARCHAR2) 
+create or replace FUNCTION GET_COUNTRY_FROM_IP(p_client_ip IN VARCHAR2) 
 RETURN VARCHAR2 
 IS
     l_ip_long NUMBER;
@@ -26,7 +26,7 @@ IS
 BEGIN
     -- 將 IPv4 轉換為數字
     l_ip_parts.EXTEND(4);
-    
+
     -- 分割 IP 地址 (如 "192.168.0.1") 為四個部分
     FOR i IN 1..3 LOOP
         l_dot_position := INSTR(l_temp_str, '.', l_start_pos);
@@ -39,16 +39,16 @@ BEGIN
             RETURN NULL;
         END IF;
     END LOOP;
-    
+
     -- 最後一部分
     l_ip_parts(4) := SUBSTR(l_temp_str, l_start_pos);
-    
+
     -- 計算數字形式的 IP
     l_ip_long := TO_NUMBER(l_ip_parts(1)) * POWER(256, 3) +
                 TO_NUMBER(l_ip_parts(2)) * POWER(256, 2) +
                 TO_NUMBER(l_ip_parts(3)) * POWER(256, 1) +
                 TO_NUMBER(l_ip_parts(4));
-    
+
     -- 模擬 Java 的 ipAddrIntToStr 方法
     l_ip_converted := '';
     FOR i IN REVERSE 3..0 LOOP
@@ -57,7 +57,7 @@ BEGIN
             l_ip_converted := l_ip_converted || '.';
         END IF;
     END LOOP;
-    
+
     -- 查詢對應的國家代碼
     BEGIN
         -- 首先查找 IP 在範圍內的 geoip_range_data 記錄
@@ -66,13 +66,13 @@ BEGIN
         JOIN DBUSERNEB.GEOIP_LOCATION_DATA gld ON grd.LOCATION_ID = gld.LOCATION_ID 
         WHERE l_ip_converted BETWEEN grd.START_IP AND grd.END_IP
         AND ROWNUM = 1;
-        
+
         -- 然後用 country_code 查找對應的中文國家名稱
         SELECT cn.NAME_ZH_TW INTO l_country_name
         FROM DBUSERNEB.COUNTRY_NAME cn
         WHERE cn.ISO_CODE = l_country_code
         AND ROWNUM = 1;
-        
+
         RETURN l_country_name;
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
@@ -81,13 +81,11 @@ BEGIN
             RETURN NULL;
     END;
 END GET_COUNTRY_FROM_IP;
-/
 
 
 
-
-CREATE OR REPLACE FUNCTION get_country_name_from_ip(client_ip IN VARCHAR2) RETURN VARCHAR2 IS
-    v_ip_parts  VARCHAR2( ausz15);
+create or replace FUNCTION get_country_name_from_ip(client_ip IN VARCHAR2) RETURN VARCHAR2 IS
+    v_ip_parts  VARCHAR2( 100);
     v_ip_num    NUMBER;
     v_location_id NUMBER;
     v_country_code VARCHAR2(2);
@@ -95,7 +93,7 @@ CREATE OR REPLACE FUNCTION get_country_name_from_ip(client_ip IN VARCHAR2) RETUR
 BEGIN
     -- Convert IP address to number
     v_ip_parts := REGEXP_REPLACE(client_ip, '(\d+)\.(\d+)\.(\d+)\.(\d+)', '\1*\2*\3*\4');
-    
+
     -- Calculate IP number equivalent to Java's ipAddrIntToStr logic
     SELECT TO_NUMBER(REGEXP_SUBSTR(v_ip_parts, '[0-9]+', 1, 1)) * POWER(256, 3) +
            TO_NUMBER(REGEXP_SUBSTR(v_ip_parts, '[0-9]+', 1, 2)) * POWER(256, 2) +
@@ -131,4 +129,3 @@ EXCEPTION
     WHEN OTHERS THEN
         RETURN NULL;
 END get_country_name_from_ip;
-/
