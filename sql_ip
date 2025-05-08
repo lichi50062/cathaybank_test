@@ -1,0 +1,14 @@
+eb_login_log_b有個CLIENT_IP欄位，經過下面城市轉換後等於geoip_range_data.START_IP，再拿geoip_range_data的LOCATION_ID去查COUNTRY_NAME的iso_code去取COUNTRY_NAME.NAME_ZH_TW
+ public static String ipAddrIntToStr(long ipAddress) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 3; i >= 0; i--) {
+            sb.append((Math.round(Math.floor((ipAddress / Math.pow(256, i)))) % 256));
+            if (i > 0) {
+                sb.append(".");
+            }
+        }
+        return sb.toString();
+    }
+
+請幫我把以上邏輯寫成oracle的fuction
+
