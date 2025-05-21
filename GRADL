@@ -1,0 +1,60 @@
+A problem occurred configuring root project 'aibank_workspace'.
+> Could not resolve all artifacts for configuration ':classpath'.
+   > Could not resolve org.springframework.boot:spring-boot-gradle-plugin:3.3.10.
+     Required by:
+         project :
+      > Could not resolve org.springframework.boot:spring-boot-gradle-plugin:3.3.10.
+         > Could not get resource 'https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-gradle-plugin/3.3.10/spring-boot-gradle-plugin-3.3.10.pom'.
+            > Could not GET 'https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-gradle-plugin/3.3.10/spring-boot-gradle-plugin-3.3.10.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+      > Could not resolve org.springframework.boot:spring-boot-gradle-plugin:3.3.10.
+         > Could not get resource 'https://plugins.gradle.org/m2/org/springframework/boot/spring-boot-gradle-plugin/3.3.10/spring-boot-gradle-plugin-3.3.10.pom'.
+            > Could not GET 'https://plugins.gradle.org/m2/org/springframework/boot/spring-boot-gradle-plugin/3.3.10/spring-boot-gradle-plugin-3.3.10.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+   > Could not resolve com.google.cloud.tools:jib-gradle-plugin:3.4.4.
+     Required by:
+         project :
+      > Could not resolve com.google.cloud.tools:jib-gradle-plugin:3.4.4.
+         > Could not get resource 'https://repo.maven.apache.org/maven2/com/google/cloud/tools/jib-gradle-plugin/3.4.4/jib-gradle-plugin-3.4.4.pom'.
+            > Could not GET 'https://repo.maven.apache.org/maven2/com/google/cloud/tools/jib-gradle-plugin/3.4.4/jib-gradle-plugin-3.4.4.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+      > Could not resolve com.google.cloud.tools:jib-gradle-plugin:3.4.4.
+         > Could not get resource 'https://plugins.gradle.org/m2/com/google/cloud/tools/jib-gradle-plugin/3.4.4/jib-gradle-plugin-3.4.4.pom'.
+            > Could not GET 'https://plugins.gradle.org/m2/com/google/cloud/tools/jib-gradle-plugin/3.4.4/jib-gradle-plugin-3.4.4.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+   > Could not resolve org.owasp:dependency-check-gradle:12.1.0.
+     Required by:
+         project :
+      > Could not resolve org.owasp:dependency-check-gradle:12.1.0.
+         > Could not get resource 'https://repo.maven.apache.org/maven2/org/owasp/dependency-check-gradle/12.1.0/dependency-check-gradle-12.1.0.pom'.
+            > Could not GET 'https://repo.maven.apache.org/maven2/org/owasp/dependency-check-gradle/12.1.0/dependency-check-gradle-12.1.0.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+      > Could not resolve org.owasp:dependency-check-gradle:12.1.0.
+         > Could not get resource 'https://plugins.gradle.org/m2/org/owasp/dependency-check-gradle/12.1.0/dependency-check-gradle-12.1.0.pom'.
+            > Could not GET 'https://plugins.gradle.org/m2/org/owasp/dependency-check-gradle/12.1.0/dependency-check-gradle-12.1.0.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+   > Could not resolve net.minidev:json-smart:2.5.2.
+     Required by:
+         project :
+      > Could not resolve net.minidev:json-smart:2.5.2.
+         > Could not get resource 'https://repo.maven.apache.org/maven2/net/minidev/json-smart/2.5.2/json-smart-2.5.2.pom'.
+            > Could not GET 'https://repo.maven.apache.org/maven2/net/minidev/json-smart/2.5.2/json-smart-2.5.2.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+      > Could not resolve net.minidev:json-smart:2.5.2.
+         > Could not get resource 'https://plugins.gradle.org/m2/net/minidev/json-smart/2.5.2/json-smart-2.5.2.pom'.
+            > Could not GET 'https://plugins.gradle.org/m2/net/minidev/json-smart/2.5.2/json-smart-2.5.2.pom'.
+               > Got SSL handshake exception during request. It might be caused by SSL misconfiguration
+                  > PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
